@@ -6,6 +6,7 @@ namespace pruebaTecnica.Controllers;
 
 public class UsuariosController : Controller
 {
+	// DbContext inyectado para acceder a la tabla de usuarios con EF Core.
 	private readonly ApplicationDbContext _context;
 
 	public UsuariosController(ApplicationDbContext context)
@@ -16,6 +17,7 @@ public class UsuariosController : Controller
 	// GET: /Usuarios
 	public async Task<IActionResult> Index()
 	{
+		// Obtiene todos los usuarios registrados para mostrarlos en la vista.
 		var usuarios = await _context.Usuarios.ToListAsync();
 		return View(usuarios);
 	}
@@ -31,11 +33,13 @@ public class UsuariosController : Controller
 	[ValidateAntiForgeryToken]
 	public async Task<IActionResult> Create(Usuario usuario)
 	{
+		// Si hay errores de validacion, se regresa al formulario con los datos capturados.
 		if (!ModelState.IsValid)
 		{
 			return View(usuario);
 		}
 
+		// Inserta el nuevo usuario y persiste cambios en base de datos.
 		_context.Add(usuario);
 		await _context.SaveChangesAsync();
 		return RedirectToAction(nameof(Index));
@@ -62,6 +66,7 @@ public class UsuariosController : Controller
 	[ValidateAntiForgeryToken]
 	public async Task<IActionResult> Edit(int id, Usuario usuario)
 	{
+		// Proteccion contra manipulacion del id en la ruta/formulario.
 		if (id != usuario.Id)
 		{
 			return NotFound();
@@ -79,6 +84,7 @@ public class UsuariosController : Controller
 		}
 		catch (DbUpdateConcurrencyException)
 		{
+			// Si otro proceso elimino el registro, se responde 404.
 			if (!UsuarioExiste(usuario.Id))
 			{
 				return NotFound();
@@ -115,6 +121,7 @@ public class UsuariosController : Controller
 		var usuario = await _context.Usuarios.FindAsync(id);
 		if (usuario is not null)
 		{
+			// Solo elimina si el usuario aun existe en la base de datos.
 			_context.Usuarios.Remove(usuario);
 			await _context.SaveChangesAsync();
 		}
@@ -124,6 +131,7 @@ public class UsuariosController : Controller
 
 	private bool UsuarioExiste(int id)
 	{
+		// Helper para validaciones de concurrencia en la actualizacion.
 		return _context.Usuarios.Any(x => x.Id == id);
 	}
     
